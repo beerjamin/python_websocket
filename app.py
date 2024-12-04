@@ -1,20 +1,32 @@
-#!/usr/bin/env python
-
 import asyncio
+import websockets
 
-from websockets.asyncio.server import serve
+# Define the WebSocket server endpoint
+async def handle_client(websocket):
+    try:
+        while True:
+            # Wait for a message from the client
+            client_message = await websocket.recv()
+            print(f"Received message from client: {client_message}")
 
-async def handler(websocket):
-    while True:
-        message = await websocket.recv()
-        print(message)
-        await websocket.send("Not much friend")
+            # Send a response back to the client
+            server_message = f"Server says: Hello, you sent '{client_message}'"
+            await websocket.send(server_message)
+            print(f"Sent message to client: {server_message}")
+    except websockets.exceptions.ConnectionClosed as e:
+        print(f"Connection closed: {e}")
 
 
+# Main function to start the WebSocket server
 async def main():
-    async with serve(handler, "localhost", 5000):
-        await asyncio.get_running_loop().create_future()  # run forever
+    # Set up the WebSocket server
+    await websockets.serve(handle_client, "localhost", 8765)
+    print("WebSocket server started on ws://localhost:8765/say_hello")
+
+    # Keep the server running
+    await asyncio.Future()  # Run forever
 
 
+# Run the WebSocket server
 if __name__ == "__main__":
     asyncio.run(main())
