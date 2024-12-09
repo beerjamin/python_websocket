@@ -55,8 +55,7 @@
       // Send command to clients
       function sendCommand(command) {
         const message = {
-          event: command,
-          payload: {},
+          command: command,
         };
 
         console.log(`Sending command: ${command}`);
