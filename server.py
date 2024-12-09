@@ -35,7 +35,7 @@ async def handle_client(websocket):
                 data = json.loads(client_message)
                 event = data.get("event")
                 payload = data.get("payload")
-                logger.info(f"Received event: {event}, payload: {payload}")
+                logger.info(f"Received event: {event}")
                 
                 # Process the event and respond (?)
                 if event == "screenshot":
@@ -49,8 +49,8 @@ async def handle_client(websocket):
                     await broadcast({"event": "search_history", "payload": payload})
 
                 #not sure if notifying clients of errors really is a great idea :D
-                #else:
-                #    response = {"event": "error", "payload": f"Unknown event: {event}"}
+                else:
+                    response = {"event": "error", "payload": f"Unknown event: {event}"}
                 
                 # Send the JSON response back to the client
                 await websocket.send(json.dumps(response))
@@ -77,15 +77,14 @@ async def handle_static_files(request):
     return web.FileResponse(file_path)
 
 # Function to send a command to all connected clients
-async def send_command_to_all(event, payload=None):
+async def send_command_to_all(command):
     message = {
-        "event": event,
-        "payload": payload or {}
+        "command": command
     }
     for client in connected_clients:
         try:
             await client.send(json.dumps(message))
-            logger.info(f"Sent {event} command to client: {message}")
+            logger.info(f"Sent {command} command to client: {message}")
         except websockets.exceptions.ConnectionClosed:
             logger.warning("Failed to send command to a client. Client disconnected.")
 
