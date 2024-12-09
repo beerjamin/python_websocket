@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Interface</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+      }
+      #history {
+        white-space: pre-wrap;
+        background-color: #f0f0f0;
+        padding: 10px;
+        margin-top: 20px;
+      }
+      button {
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Admin Interface</h1>
+
+    <h2>Send Command to Clients</h2>
+    <button onclick="sendCommand('pull_screenshots')">Pull Screenshots</button>
+    <button onclick="sendCommand('pull_search_history')">
+      Pull Search History
+    </button>
+
+    <h2>Search History</h2>
+    <div id="history">Search history will appear here...</div>
+
+    <script>
+      const websocket = new WebSocket("ws://localhost:8765");
+
+      websocket.onopen = function () {
+        console.log("Connected to WebSocket server");
+      };
+
+      websocket.onmessage = function (event) {
+        const message = JSON.parse(event.data);
+        console.log("Received:", message);
+
+        // Handle specific messages
+        if (message.event === "response") {
+          console.log("Response received:", message.payload);
+        } else if (message.event === "search_history") {
+          console.log("Search history received:", message.payload);
+          document.getElementById("history").innerText = message.payload;
+        }
+      };
+
+      // Send command to clients
+      function sendCommand(command) {
+        const message = {
+          event: command,
+          payload: {},
+        };
+
+        console.log(`Sending command: ${command}`);
+        websocket.send(JSON.stringify(message));
+      }
+    </script>
+  </body>
+</html>
