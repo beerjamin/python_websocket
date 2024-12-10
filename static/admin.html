@@ -35,6 +35,7 @@
     <script>
       const websocket = new WebSocket("ws://localhost:8765");
       const screenshotBasePath = "/screenshots";
+      const searchHistoryBasePath = "search_history.txt";
 
       websocket.onopen = function () {
         console.log("Connected to WebSocket server");
@@ -44,15 +45,11 @@
         const message = JSON.parse(event.data);
         console.log("Received:", message);
 
-        // Handle specific messages
-        if (message.command === "response") {
-          console.log("Response received:", message.payload);
-        } else if (message.command === "search_history") {
+        if (message.command === "update_search_history") {
           console.log("Search history received:", message.payload);
           document.getElementById("history").innerText = message.payload;
-        } else if (message.command === "screenshot") {
+        } else if (message.command === "update_screenshot") {
           console.log("Screenshot update received");
-
           const screenshotContainer = document.getElementById(
             "screenshot-container"
           );
