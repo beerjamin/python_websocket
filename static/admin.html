@@ -34,6 +34,7 @@
 
     <script>
       const websocket = new WebSocket("ws://localhost:8765");
+      const screenshotBasePath = "/screenshots";
 
       websocket.onopen = function () {
         console.log("Connected to WebSocket server");
@@ -57,20 +58,20 @@
           );
           screenshotContainer.innerHTML = ""; // Clear previous content
 
-          // Loop through the list of screenshots and create image elements
-          message.payload.forEach((base64Screenshot, index) => {
+          // Display each screenshot with a timestamp
+          message.payload.forEach((screenshot) => {
+            const { filename, timestamp } = screenshot;
+
             const img = new Image();
-            img.src = `data:image/png;base64,${base64Screenshot}`;
-            img.style.maxWidth = "100%"; // Ensure the image fits within the admin interface
+            img.src = `${screenshotBasePath}/${filename}`;
+            img.style.maxWidth = "100%";
             img.style.marginBottom = "10px";
 
-            // Optionally, add a caption or number
             const caption = document.createElement("div");
-            caption.innerText = `Screenshot ${index + 1}`;
+            caption.innerText = `Screenshot received at: ${timestamp}`;
             caption.style.marginBottom = "5px";
             caption.style.fontWeight = "bold";
 
-            // Append caption and image to the container
             screenshotContainer.appendChild(caption);
             screenshotContainer.appendChild(img);
           });
