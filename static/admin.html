@@ -50,10 +50,30 @@
           console.log("Search history received:", message.payload);
           document.getElementById("history").innerText = message.payload;
         } else if (message.event === "screenshot") {
-          console.log("Screenshot received");
-          const img = new Image();
-          img.src = `data:image/png;base64,${message.payload}`;
-          document.body.appendChild(img); // Append the screenshot to the page
+          console.log("Screenshot update received");
+
+          const screenshotContainer = document.getElementById(
+            "screenshot-container"
+          );
+          screenshotContainer.innerHTML = ""; // Clear previous content
+
+          // Loop through the list of screenshots and create image elements
+          message.payload.forEach((base64Screenshot, index) => {
+            const img = new Image();
+            img.src = `data:image/png;base64,${base64Screenshot}`;
+            img.style.maxWidth = "100%"; // Ensure the image fits within the admin interface
+            img.style.marginBottom = "10px";
+
+            // Optionally, add a caption or number
+            const caption = document.createElement("div");
+            caption.innerText = `Screenshot ${index + 1}`;
+            caption.style.marginBottom = "5px";
+            caption.style.fontWeight = "bold";
+
+            // Append caption and image to the container
+            screenshotContainer.appendChild(caption);
+            screenshotContainer.appendChild(img);
+          });
         }
       };
 
