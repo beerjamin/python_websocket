@@ -48,7 +48,7 @@
         if (message.command === "update_search_history") {
           console.log("Search history received:", message.payload);
           document.getElementById("history").innerText = message.payload;
-        } else if (message.command === "update_screenshot") {
+        } else if (message.command === "update_screenshots") {
           console.log("Screenshot update received");
           const screenshotContainer = document.getElementById(
             "screenshot-container"

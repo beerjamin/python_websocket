@@ -59,7 +59,7 @@ async def handle_client(websocket):
                         for f in os.listdir(SCREENSHOT_DIR)
                     ]
                     admin_message = {
-                        "command": "update_screenshot",
+                        "command": "update_screenshots",
                         "payload": screenshot_list,
                     }
                     await broadcast(admin_message)
