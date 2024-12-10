@@ -49,6 +49,11 @@
         } else if (message.event === "search_history") {
           console.log("Search history received:", message.payload);
           document.getElementById("history").innerText = message.payload;
+        } else if (message.event === "screenshot") {
+          console.log("Screenshot received");
+          const img = new Image();
+          img.src = `data:image/png;base64,${message.payload}`;
+          document.body.appendChild(img); // Append the screenshot to the page
         }
       };
 

