@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Interface</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+      }
+      #history {
+        white-space: pre-wrap;
+        background-color: #f0f0f0;
+        padding: 10px;
+        margin-top: 20px;
+      }
+      button {
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Admin Interface</h1>
+
+    <h2>Send Command to Clients</h2>
+    <button onclick="sendCommand('pull_screenshots')">Pull Screenshots</button>
+    <button onclick="sendCommand('pull_search_history')">
+      Pull Search History
+    </button>
+
+    <h2>Search History</h2>
+    <div id="history">Search history will appear here...</div>
+
+    <script>
+      const websocket = new WebSocket("ws://localhost:8765");
+      const screenshotBasePath = "/screenshots";
+      const searchHistoryBasePath = "search_history.txt";
+
+      websocket.onopen = function () {
+        console.log("Connected to WebSocket server");
+      };
+
+      websocket.onmessage = function (event) {
+        const message = JSON.parse(event.data);
+        console.log("Received:", message);
+
+        if (message.command === "update_search_history") {
+          console.log("Search history received:", message.payload);
+          document.getElementById("history").innerText = message.payload;
+        } else if (message.command === "update_screenshots") {
+          console.log("Screenshot update received");
+          const screenshotContainer = document.getElementById(
+            "screenshot-container"
+          );
+          screenshotContainer.innerHTML = ""; // Clear previous content
+
+          // Display each screenshot with a timestamp
+          message.payload.forEach((screenshot) => {
+            const { filename, timestamp } = screenshot;
+
+            const img = new Image();
+            img.src = `${screenshotBasePath}/${filename}`;
+            img.style.maxWidth = "100%";
+            img.style.marginBottom = "10px";
+
+            const caption = document.createElement("div");
+            caption.innerText = `Screenshot received at: ${timestamp}`;
+            caption.style.marginBottom = "5px";
+            caption.style.fontWeight = "bold";
+
+            screenshotContainer.appendChild(caption);
+            screenshotContainer.appendChild(img);
+          });
+        }
+      };
+
+      // Send command to clients
+      function sendCommand(command) {
+        const message = {
+          command: command,
+        };
+
+        console.log(`Sending command: ${command}`);
+        websocket.send(JSON.stringify(message));
+      }
+    </script>
+  </body>
+</html>
