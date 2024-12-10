@@ -63,13 +63,12 @@ async def handle_client(websocket):
                     # should work for now but ill look into it at some point)
                     await broadcast({"command": "search_history"})
 
-                #not sure if notifying clients of errors really is a great idea :D
                 else:
                     response = {"command": "error"}
+                    # Send the JSON response back to the client
+                    await websocket.send(json.dumps(response))
+                    logger.info(f"Sent message to client: {response}")
                 
-                # Send the JSON response back to the client
-                await websocket.send(json.dumps(response))
-                logger.info(f"Sent message to client: {response}")
 
             except json.JSONDecodeError:
                 # Handle invalid JSON
