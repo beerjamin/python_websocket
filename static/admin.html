@@ -44,12 +44,12 @@
         console.log("Received:", message);
 
         // Handle specific messages
-        if (message.event === "response") {
+        if (message.command === "response") {
           console.log("Response received:", message.payload);
-        } else if (message.event === "search_history") {
+        } else if (message.command === "search_history") {
           console.log("Search history received:", message.payload);
           document.getElementById("history").innerText = message.payload;
-        } else if (message.event === "screenshot") {
+        } else if (message.command === "screenshot") {
           console.log("Screenshot update received");
 
           const screenshotContainer = document.getElementById(

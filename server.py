@@ -50,7 +50,7 @@ async def handle_client(websocket):
 
                     # Broadcast all screenshots to the admin interface
                     admin_message = {
-                        "event": "screenshot_update",
+                        "command": "screenshot_update",
                         "payload": screenshot_store  
                     }
                     await broadcast(admin_message)
